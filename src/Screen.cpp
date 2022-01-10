@@ -46,13 +46,26 @@ void Screen_1::init()
   img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
   img->setFreeFont(APP_FONT);
   img->drawString("Initializing Gps...", 0, 0, FONT4);
-  img->setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
-  img->drawString("GPS not connected", 0, img->fontHeight(FONT4));
 }
 
 void Screen_1::update()
 {
+  Serial.println("Status: ");
   if (gps->getStatus() == LOW_PRECISSION)
+  {
+    img->setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
+    img->drawString("GPS connected              ", 0, img->fontHeight(FONT4));
+  }
+  else
+  {
+    img->setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
+    img->drawString("GPS not connected", 0, img->fontHeight(FONT4));
+  }
+}
+
+void Screen_1::update(position_t position)
+{
+  if (position.status == LOW_PRECISSION)
   {
     img->setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
     img->drawString("GPS connected              ", 0, img->fontHeight(FONT4));
@@ -80,9 +93,25 @@ void Screen_2::update()
   if (gps->getStatus() == FIXED)
   {
     img->fillSprite(APP_BACKGROUND_COLOR);
-    img->drawString("Lon: " + String(gps->getPosition().longitude), 0, ypos);
-    img->drawString("Lat: " + String(gps->getPosition().latitude), 0, ypos + img->fontHeight(FONT4));
+    img->drawString("Lon: " + String(gps->getPosition().longitude, 4), 0, ypos);
+    img->drawString("Lat: " + String(gps->getPosition().latitude, 4), 0, ypos + img->fontHeight(FONT4));
     img->drawString("Acc: " + String(gps->getPosition().accuracy) +"mm", 0, ypos + img->fontHeight(FONT4) * 2);
+  }
+  else
+  {
+    img->fillSprite(APP_BACKGROUND_COLOR);
+    img->drawString("Fixing position, please wait...", 0, ypos);
+  }
+}
+
+void Screen_2::update(position_t position)
+{
+  if (gps->getStatus() == FIXED)
+  {
+    img->fillSprite(APP_BACKGROUND_COLOR);
+    img->drawString("Lon: " + String(position.longitude, 4), 0, ypos);
+    img->drawString("Lat: " + String(position.latitude, 4), 0, ypos + img->fontHeight(FONT4));
+    img->drawString("Acc: " + String(position.accuracy) +"mm", 0, ypos + img->fontHeight(FONT4) * 2);
   }
   else
   {

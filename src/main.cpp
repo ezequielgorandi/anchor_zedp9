@@ -1,3 +1,5 @@
+/*Se implemento la cola y funciona OK. Falta reemplazar el uso del GPS en la terea de pantalla, por el uso de la cola (hay que hacerlo?)*/
+
 #include "Anchor.h"
 #include "Free_Fonts.h"
 #include "Gps.h"
@@ -14,44 +16,59 @@
 
 uint32_t ypos = 0;
 long lastTime = 0; // Simple local timer. Limits amount if I2C traffic to u-blox module.
-
-//Gps gps = Gps();
-
-void gpsTask(void *pvParameters)
-{
-  while (gps.begin() == false)
-    delay(1000);
-  gps.config();
-  for (;;)
-  {
-    gps.readPosition_2();
-    delay(250);
-  }
-}
-
-void keyboardTask(void *pvParameters)
-{
-  Anchor anchor();
-  while (1)
-  {
-  //  M5.update(); // Read the press state of the key.
-//
-  //  if (M5.BtnA.wasPressed())
-  //  {
-  //    if (myGNSS.powerSaveMode()) // Defaults to true
-  //      Serial.println(F("Power Save Mode enabled."));
-  //    else
-  //      Serial.println(F("*** Power Save Mode FAILED ***"));
-  //    M5.Power.powerOFF();
-  //  }
-  }
-}
+Gps gps = Gps();
+Anchor anchor = Anchor();
+// Gps gps = Gps();
 
 void screenTask(void *pvParameters)
 {
   TFT_eSprite img = TFT_eSprite(&M5.Lcd);
   Screen_1 screen_1 = Screen_1(&img, &gps);
   Screen_2 screen_2 = Screen_2(&img, &gps);
+  // Falta borrar el Gps
+  position_t aPosition;
+
+  screen_1.init();
+  screen_1.update(aPosition);
+  screen_1.show();
+
+  while (1)
+  {
+    // Probando el funcionamiento de las Colas
+    if (gpsQueue != NULL)
+    {
+      if (gpsQueue != NULL && xQueueReceive(gpsQueue, &(aPosition), 0))
+      {
+        Serial.println(aPosition.status);
+        switch (aPosition.status)
+        {
+        case NOT_CONNECTED:
+        case LOW_PRECISSION:
+          screen_1.init();
+          screen_1.update();
+          screen_1.show();
+          break;
+        case FIXED:
+          screen_2.init();
+          screen_2.update(aPosition);
+          screen_2.show();
+          break;
+        }
+      }
+    }
+    else
+      Serial.println("Queue es NULL");
+    delay(250);
+  }
+  // Will never reach this point.
+}
+
+void screenTask_ant(void *pvParameters)
+{
+  TFT_eSprite img = TFT_eSprite(&M5.Lcd);
+  Screen_1 screen_1 = Screen_1(&img, &gps);
+  Screen_2 screen_2 = Screen_2(&img, &gps);
+  position_t aPosition;
 
   while (1)
   {
@@ -67,6 +84,22 @@ void screenTask(void *pvParameters)
       screen_2.init();
       screen_2.update();
       screen_2.show();
+
+      // Probando el funcionamiento de las Colas
+      if (gpsQueue != NULL)
+      {
+        if (xQueueReceive(gpsQueue, &(aPosition), 0))
+        {
+          Serial.println("LEIDO DE LA COLA!!!!!!! ");
+          Serial.println(aPosition.longitude);
+          Serial.println(aPosition.latitude);
+        }
+        else
+          Serial.println("Falla el recieved");
+      }
+      else
+        Serial.println("Queue es NULL");
+
       delay(250);
     }
   }
@@ -82,62 +115,7 @@ void initM5Stack()
   M5.Power.begin(); // Init Power module.  ???
 
   // M5.setWakeupButton(BUTTON_C_PIN);
-  // M5.Power.setWakeupButton(BUTTON_C_PIN);
-}
-
-void initGps()
-{ /*
-  // Resets the Gps configuration
-  //while ( myGNSS.begin() == false );
-  //myGNSS.factoryReset(); //Reset everything: baud rate, I2C address, update rate, everything.
-  ypos += img.fontHeight(FONT4);
-  img.setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
-  img.drawString("GPS not connected",0,ypos);
-  img.pushSprite(0, 0);
-  while ( myGNSS.begin() == false )
-  {
-    delay(1000);
-    M5.update(); //Read the press state of the key.
-    if (M5.BtnA.wasPressed())
-    {
-      if (myGNSS.powerSaveMode()) // Defaults to true
-        Serial.println(F("Power Save Mode enabled."));
-      else
-        Serial.println(F("*** Power Save Mode FAILED ***"));
-      M5.Power.powerOFF();
-    }
-
-  }
-  myGNSS.powerSaveMode(false);
-  img.setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
-  img.drawString("GPS connected              ",0,ypos);
-  img.pushSprite(0, 0);
-  myGNSS.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
-  myGNSS.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the communications port settings to flash and BBR
-  myGNSS.setAutoPVT(true); //Tell the GNSS to "send" each solution
- // if (myGNSS.setDynamicModel(DYN_MODEL_PEDESTRIAN) == false)
- // //if (myGNSS.setDynamicModel(DYN_MODEL_PORTABLE) == false) // Set the dynamic model to PORTABLE
- // {
- //   Serial.println(F("*** Warning: setDynamicModel failed ***"));
- // }
- // else
- // {
- //   Serial.println(F("Dynamic platform model changed successfully!"));
- // }
-////Toma una muestra cada 100mS
- // if (myGNSS.setMeasurementRate(250) == false)
- // {
- //   Serial.println(F("Could not set the measurement rate. Freezing."));
- //   while (1);
- // }
-//
-////Con 100 muestras entrega una nueva posicion (10)
- // if (myGNSS.setNavigationRate(10) == false)
- // {
- //   Serial.println(F("Could not set the navigation rate. Freezing."));
- //   while (1);
- // }
- */
+  M5.Power.setWakeupButton(BUTTON_C_PIN);
 }
 
 void setup()
@@ -148,32 +126,16 @@ void setup()
   Serial.println("SparkFun u-blox Example");
   initM5Stack();
 
-  xTaskCreatePinnedToCore(
-      gpsTask, // Function to implement the task.  线程对应函数名称(不能有返回值)
-      "gps",   //线程名称
-      4096,    // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
-      NULL,    // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
-      1,       // Priority of the task.  任务的优先级
-      NULL,    // Task handler.  任务句柄
-      0);      // Core where the task should run.  将任务挂载到指定内核
+  gps.initTask();
 
   xTaskCreatePinnedToCore(
-      screenTask, // Function to implement the task.  线程对应函数名称(不能有返回值)
-      "screen",   //线程名称
-      4096,       // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
-      NULL,       // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
-      1,          // Priority of the task.  任务的优先级
-      NULL,       // Task handler.  任务句柄
-      0);         // Core where the task should run.  将任务挂载到指定内核
-
-//  xTaskCreatePinnedToCore(
-//      keyboardTask, // Function to implement the task.  线程对应函数名称(不能有返回值)
-//      "keys",       //线程名称
-//      4096,         // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
-//      NULL,         // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
-//      1,            // Priority of the task.  任务的优先级
-//      NULL,         // Task handler.  任务句柄
-//      0);           // Core where the task should run.  将任务挂载到指定内核
+      screenTask,       // Function to implement the task.  线程对应函数名称(不能有返回值)
+      "screen",         //线程名称
+      4096,             // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
+      NULL,             // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
+      tskIDLE_PRIORITY, // Priority of the task.  任务的优先级
+      NULL,             // Task handler.  任务句柄
+      0);               // Core where the task should run.  将任务挂载到指定内核
 }
 
 void loop()

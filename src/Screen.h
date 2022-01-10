@@ -21,6 +21,7 @@ public:
 	Screen(TFT_eSprite *anImg);
 	void init();
 	void show();
+	void update(position_t position);
 	void update();
 	void readButtons();
 };
@@ -31,6 +32,7 @@ public:
 	Screen_1(TFT_eSprite *anImg, Gps *aGps);
 	void init();
 	void update();
+	void update(position_t position);
 private:
 	Gps *gps;
 };
@@ -41,6 +43,7 @@ public:
 	Screen_2(TFT_eSprite *anImg, Gps *aGps);
 	void init();
 	void update();
+	void update(position_t position);
 private:
 	Gps *gps;
 };

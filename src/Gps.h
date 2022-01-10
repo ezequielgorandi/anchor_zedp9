@@ -23,8 +23,10 @@ public:
 	bool isFixed();
 	bool begin();
 	void config();
-	void readPosition();
+	bool readPosition();
 	void readPosition_2();
+	void initTask();
+	void setAsDesconnected();
 	GPS_STATUS getStatus();
 
 private:
@@ -33,6 +35,6 @@ private:
 	SFE_UBLOX_GNSS gpsController;
 };
 
-extern Gps gps;
-
+//extern Gps gps;
+extern QueueHandle_t gpsQueue;
 #endif //_GPS_H
