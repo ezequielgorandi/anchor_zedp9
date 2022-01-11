@@ -4,7 +4,7 @@
 
 #include "Gps.h"
 //#define _DEBUG_GPS
-#define MAX_FAIL_READ 3
+#define MAX_FAIL_READ 6
 #define DEGREE_FACTOR 10000000
 // Cola por la que se comparte al posicion
 QueueHandle_t gpsQueue = NULL;
@@ -46,21 +46,16 @@ Gps::Gps()
 
 void Gps::initTask()
 {
-  gpsQueue = xQueueCreate(
-      /* The number of items the queue can hold. */
-      1,
-      /* Size of each item is big enough to hold the
-      whole structure. */
-      sizeof(position));
+  gpsQueue = xQueueCreate(1, sizeof(position));
 
   xTaskCreatePinnedToCore(
-      gpsTask,      // Function to implement the task.  线程对应函数名称(不能有返回值)
-      "gps",        //线程名称
-      4096,         // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
-      (void *)this, // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
-      4,            // Priority of the task.  任务的优先级
-      NULL,         // Task handler.  任务句柄
-      1);           // Core where the task should run.  将任务挂载到指定内核
+      gpsTask,
+      "gps",
+      4096,
+      (void *)this,
+      4,
+      NULL,
+      1);
 }
 
 GPS_STATUS Gps::getStatus()
@@ -85,11 +80,6 @@ bool Gps::begin()
 
 void Gps::config()
 {
-  // Serial.print(F("Configurando GPS"));
-  // gpsController.powerSaveMode(false);
-  // gpsController.setI2COutput(COM_TYPE_UBX);                 // Set the I2C port to output UBX only (turn off NMEA noise)
-  // gpsController.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); // Save (only) the communications port settings to flash and BBR
-  // gpsController.setAutoPVT(true);                           // Tell the GNSS to "send" each solution
   gpsController.setVal16(UBLOX_CFG_RATE_MEAS, 500);
   gpsController.setI2COutput(COM_TYPE_UBX);                 // Set the I2C port to output UBX only (turn off NMEA noise)
   gpsController.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); // Save (only) the communications port settings to flash and BBR

@@ -2,26 +2,36 @@
  * Project anchor
  */
 #include "Anchor.h"
-//#include <bits/stdc++.h>
+#include "setup.h"
+
+QueueHandle_t anchorPosSettedQueue = NULL;
 
 void anchorTask(void *pvParameters)
 {
   Anchor *anchor = (Anchor *)pvParameters;
   for (;;)
   {
-    // Serial.println("Tengo que leer boton");
     M5.update();
+    if (M5.BtnB.wasPressed())
+    {
+      anchor->data.isFixed = false;
+    }
     if (M5.BtnA.wasPressed())
     {
-      if (!xQueueReceive(gpsQueue, &anchor->position, 10000) || anchor->position.status != FIXED)
+      anchor->newPositionFlag = 1;
+      if (!xQueueReceive(gpsQueue, &anchor->data.position, 10000) || anchor->data.position.status != FIXED || anchor->data.position.accuracy > MIN_ANCHOR_ACCURACY)
       {
+        anchor->data.isFixed = false;
+        anchor->newPositionFlag = -1;
         Serial.println("Invalid Position: ");
       }
       else
       {
+        anchor->data.isFixed = true;
+        anchor->newPositionFlag = 2;
         Serial.println("Anchor Position: ");
-        Serial.println(anchor->position.longitude);
-        Serial.println(anchor->position.latitude);
+        Serial.println(anchor->data.position.longitude, 6);
+        Serial.println(anchor->data.position.latitude, 6);
       }
       delay(1000);
     }
@@ -39,16 +49,16 @@ void anchorTask(void *pvParameters)
 Anchor::Anchor()
 {
   xTaskCreatePinnedToCore(
-      anchorTask,   // Function to implement the task.  线程对应函数名称(不能有返回值)
-      "anchorTask", //线程名称
-      4096,         // The size of the task stack specified as the number of * bytes.任务堆栈的大小(字节)
-      (void *)this, // Pointer that will be used as the parameter for the task * being created.  创建作为任务输入参数的指针
-      5,            // Priority of the task.  任务的优先级
-      NULL,         // Task handler.  任务句柄
-      0);           // Core where the task should run.  将任务挂载到指定内核
+      anchorTask,
+      "anchorTask",
+      4096,
+      (void *)this,
+      5,
+      NULL,
+      0);
+
+  anchorPosSettedQueue = xQueueCreate(1, sizeof(data.position));
 }
-
-
 
 // Utility function for converting degrees to radians
 long double Anchor::toRadians(const long double degree)
@@ -88,7 +98,7 @@ long double Anchor::distance(long double lat1, long double long1,
  */
 position_t Anchor::getPosition()
 {
-  return position;
+  return data.position;
 }
 
 /**
@@ -103,7 +113,22 @@ void Anchor::move(float north, float west)
  * @param referencePosition
  * @return long
  */
-long Anchor::getDistance(position_t referencePosition)
+#define WINDOW_SIZE 3
+// Esta funcion es llamada desde "screen". Idealmente, debería ejecutarse cada vez que se recibe un nuevo valor de GPS.
+float Anchor::getDistance(position_t reference)
 {
-  return 0;
+  static float media[WINDOW_SIZE] = {0, 0, 0};
+  static int index = 0;
+  float sum = 0;
+  media[index] = distance(reference.latitude, reference.longitude, data.position.latitude, data.position.longitude) * 1000;
+  // media[index] = distance(-34.6528401716296, -58.61750658743727, -34.65179758741755, -58.61754637124556)*1000;
+
+  index++;
+  if (index == WINDOW_SIZE)
+    index = 0;
+  for (int i = 0; i < WINDOW_SIZE; i++)
+  {
+    sum += media[i];
+  }
+  return sum / WINDOW_SIZE;
 }
