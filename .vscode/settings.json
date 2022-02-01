@@ -2,16 +2,34 @@
   "C_Cpp_Runner.cCompilerPath": "C:/Users/Ezequiel/.platformio/packages/toolchain-xtensa32/bin/xtensa-esp32-elf-gcc.exe",
   "C_Cpp_Runner.cppCompilerPath": "C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/g++.exe",
   "C_Cpp_Runner.debuggerPath": "C:/Program Files (x86)/mingw-w64/i686-8.1.0-posix-dwarf-rt_v6-rev0/mingw32/bin/gdb.exe",
-  "C_Cpp_Runner.warnings": [],
+  "C_Cpp_Runner.cStandard": "c99",
+  "C_Cpp_Runner.cppStandard": "c++11",
+  "C_Cpp_Runner.msvcBatchPath": "",
+  "C_Cpp_Runner.warnings": [
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic"
+  ],
+  "C_Cpp_Runner.enableWarnings": true,
+  "C_Cpp_Runner.warningsAsError": false,
   "C_Cpp_Runner.compilerArgs": [
     "-mlongcalls",
     ""
   ],
+  "C_Cpp_Runner.linkerArgs": [],
   "C_Cpp_Runner.includePaths": [
-    "c:/Users/Ezequiel/Downloads/Documents/PlatformIO/Projects/anchor_zedp9/include",
-    "c:/Users/Ezequiel/Downloads/Documents/PlatformIO/Projects/anchor_zedp9/src",
-    "c:/Users/Ezequiel/Downloads/Documents/PlatformIO/Projects/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/SparkFun u-blox GNSS Arduino Library/src",
-    "c:/Users/Ezequiel/Downloads/Documents/PlatformIO/Projects/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/M5Stack/src",
+    "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/include",
+    "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/src",
+    "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/SparkFun u-blox GNSS Arduino Library/src",
+    "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/M5Stack/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_update",
@@ -75,14 +93,6 @@
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/fb_gfx",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/cores/esp32",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/variants/m5stack_core_esp32",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/AsyncUDP/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/AzureIoT/src",
@@ -106,18 +116,16 @@
     "C:/Users/Ezequiel/.platformio/packages/tool-unity",
     ""
   ],
-  "C_Cpp_Runner.linkerArgs": [],
-  "C_Cpp_Runner.cStandard": "c99",
-  "C_Cpp_Runner.cppStandard": "c++11",
-  "C_Cpp_Runner.excludeSearch": [],
-  "C_Cpp_Runner.enableWarnings": true,
-  "C_Cpp_Runner.warningsAsError": false,
-  "files.associations": {
-    "*.tcc": "cpp",
-    "fstream": "cpp",
-    "istream": "cpp",
-    "ostream": "cpp",
-    "sstream": "cpp",
-    "new": "cpp"
-  }
+  "C_Cpp_Runner.includeSearch": [
+    "*",
+    "**/*"
+  ],
+  "C_Cpp_Runner.excludeSearch": [
+    "**/build",
+    "**/build/**",
+    "**/.*",
+    "**/.*/**",
+    "**/.vscode",
+    "**/.vscode/**"
+  ]
 }

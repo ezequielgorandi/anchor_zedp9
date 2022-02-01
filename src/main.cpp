@@ -7,6 +7,10 @@
 #include "SparkFun_u-blox_GNSS_Arduino_Library.h"
 #include <Arduino.h>
 #include <M5Stack.h>
+#include <WiFi.h>
+
+#define WIFI_SSID "Telecentro-717c"
+#define WIFI_PASSWORD "UMN32NHDZNHJ"
 
 #define APP_BACKGROUND_COLOR TFT_BLACK
 #define APP_FONT FSSB9
@@ -37,11 +41,11 @@ void screenTask(void *pvParameters)
     {
       M5.Power.powerOFF();
     }
-    
-    //Anchor is being fixed
+
+    // Anchor is being fixed
     if (anchor.newPositionFlag != 0)
     {
-      if ( screen_setAnchorPos.set(&anchor.newPositionFlag, anchor.data) == true )
+      if (screen_setAnchorPos.set(&anchor.newPositionFlag, anchor.data) == true)
         delay(3000);
     }
 
@@ -61,7 +65,7 @@ void screenTask(void *pvParameters)
         case FIXED:
           float distance;
           screen_2.init();
-          if(anchor.data.isFixed == true )
+          if (anchor.data.isFixed == true)
             distance = anchor.getDistance(aPosition);
           else
             distance = 0;
@@ -80,7 +84,7 @@ void screenTask(void *pvParameters)
 
 void initM5Stack()
 {
-  M5.begin(); // Init M5Core.
+  M5.begin();       // Init M5Core.
   M5.Power.begin(); // Init Power module.  ???
 
   // M5.setWakeupButton(BUTTON_C_PIN);
@@ -94,7 +98,19 @@ void setup()
   Wire.begin();
   Serial.println("SparkFun u-blox Example");
   initM5Stack();
-  
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(300);
+  }
+  Serial.println();
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
   gps.initTask();
 
   xTaskCreatePinnedToCore(
@@ -108,5 +124,4 @@ void setup()
 }
 void loop()
 {
-  
 }

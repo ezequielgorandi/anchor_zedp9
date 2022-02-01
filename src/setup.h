@@ -1,1 +1,1 @@
-#define MIN_ANCHOR_ACCURACY 5000 // [mm] If gps accuracy is under this value, anchor position won't be fixed
+#define MIN_ANCHOR_ACCURACY 10000 // [mm] If gps accuracy is under this value, anchor position won't be fixed
