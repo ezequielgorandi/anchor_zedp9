@@ -20,6 +20,9 @@
   "C_Cpp_Runner.includePaths": [
     "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/include",
     "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/src",
+    "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/Firebase Arduino Client Library for ESP8266 and ESP32/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
+    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",
     "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/SparkFun u-blox GNSS Arduino Library/src",
     "c:/Users/Ezequiel/Google Drive/Trabajo/RepositorioGit/Anchor/anchor_zedp9/.pio/libdeps/m5stack-core-esp32/M5Stack/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
@@ -107,10 +110,8 @@
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdateServer/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/NetBIOS/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/SimpleBLE/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
-    "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
     "C:/Users/Ezequiel/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
     "C:/Users/Ezequiel/.platformio/packages/tool-unity",
@@ -127,5 +128,15 @@
     "**/.*/**",
     "**/.vscode",
     "**/.vscode/**"
-  ]
+  ],
+  "files.associations": {
+    "algorithm": "cpp",
+    "array": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "vector": "cpp",
+    "initializer_list": "cpp"
+  }
 }

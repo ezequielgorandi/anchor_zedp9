@@ -1,6 +1,7 @@
 /*Se implemento la cola y funciona OK. Falta reemplazar el uso del GPS en la terea de pantalla, por el uso de la cola (hay que hacerlo?)*/
 
 #include "Anchor.h"
+#include "Boat.hpp"
 #include "Firebase.h"
 #include "Free_Fonts.h"
 #include "Gps.h"
@@ -19,8 +20,8 @@
 
 uint32_t ypos = 0;
 long lastTime = 0; // Simple local timer. Limits amount if I2C traffic to u-blox module.
-Anchor anchor = Anchor();
-Gps gps = Gps();
+
+Boat boat = Boat();
 
 #define FIREBASE_STACK_SIZE 65000
 StaticTask_t firebaseBuffer;
@@ -39,8 +40,8 @@ void screenTask(void *pvParameters)
   int count = 1;
 
   // Falta borrar el Gps
-  Screen_1 screen_1 = Screen_1(&img, &gps);
-  Screen_2 screen_2 = Screen_2(&img, &gps);
+  Screen_1 screen_1 = Screen_1(&img, &boat.gps);
+  Screen_2 screen_2 = Screen_2(&img, &boat.gps);
   Screen_SetAnchorPosition screen_setAnchorPos = Screen_SetAnchorPosition(&img);
   position_t aPosition;
 
@@ -55,44 +56,36 @@ void screenTask(void *pvParameters)
     }
 
     // Anchor is being fixed
-    if (anchor.newPositionFlag != 0)
+    if (boat.anchor.newPositionFlag != 0)
     {
-      if (screen_setAnchorPos.set(&anchor.newPositionFlag, anchor.data) == true)
+      if (screen_setAnchorPos.set(&boat.anchor.newPositionFlag, boat.anchor.data) == true)
         delay(3000);
     }
-
-    if (gpsQueue != NULL)
+    aPosition = boat.gps.getPosition();
+    Serial.println(aPosition.status);
+    switch (aPosition.status)
     {
-      if (gpsQueue != NULL && xQueueReceive(gpsQueue, &(aPosition), 0))
-      {
-        Serial.println(aPosition.status);
-        switch (aPosition.status)
-        {
-        case NOT_CONNECTED:
-        case LOW_PRECISSION:
-          screen_1.init();
-          screen_1.update();
-          break;
-        case FIXED:
-          float distance;
-          screen_2.init(&img);
-          if (anchor.data.isFixed == true)
-            distance = anchor.getDistance(aPosition);
-          else
-            distance = 0;
-          screen_2.update(aPosition, distance, anchor.data);
-          break;
-        }
-      }
+    case NOT_CONNECTED:
+    case LOW_PRECISSION:
+      screen_1.init();
+      screen_1.update();
+      break;
+    case FIXED:
+      float distance;
+      screen_2.init(&img);
+      if (boat.anchor.data.isFixed == true)
+        distance = boat.getAnchorDistance();
+      else
+        distance = 0;
+      screen_2.update(aPosition, distance, boat.anchor.data);
+      break;
     }
-    else
-      Serial.println("Queue es NULL");
     uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
     delay(250);
     Serial.print("Display:");
     Serial.println(uxHighWaterMark);
+    // Will never reach this point.
   }
-  // Will never reach this point.
 }
 
 void initM5Stack()
@@ -124,7 +117,7 @@ void setup()
   Serial.println(WiFi.localIP());
   Serial.println();
 
-  gps.initTask();
+  boat.initTask();
 
   xTaskCreateStaticPinnedToCore(
       screenTask,        /* Function that implements the task. */
@@ -137,24 +130,15 @@ void setup()
       0);
 
   /* Create the task without using any dynamic memory allocation. */
-  xTaskCreateStaticPinnedToCore(
-      firebaseTask,        /* Function that implements the task. */
-      "NAME",              /* Text name for the task. */
-      FIREBASE_STACK_SIZE, /* Number of indexes in the xStack array. */
-      (void *)&anchor,     /* Parameter passed into the task. */
-      2,                   /* Priority at which the task is created. */
-      firebaseStack,       /* Array to use as  the task's stack. */
-      &firebaseBuffer,
-      1);
-
-  // xTaskCreatePinnedToCore(
-  //     screenTask,
-  //     "screen",
-  //     4096,
-  //     NULL,
-  //     1,
-  //     NULL,
-  //     0);
+    xTaskCreateStaticPinnedToCore(
+        firebaseTask,        /* Function that implements the task. */
+        "NAME",              /* Text name for the task. */
+        FIREBASE_STACK_SIZE, /* Number of indexes in the xStack array. */
+        (void *)&boat,     /* Parameter passed into the task. */
+        2,                   /* Priority at which the task is created. */
+        firebaseStack,       /* Array to use as  the task's stack. */
+        &firebaseBuffer,
+        1);
 }
 void loop()
 {

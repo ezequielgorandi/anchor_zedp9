@@ -3,9 +3,9 @@
  */
 #ifndef _ANCHOR_H
 #define _ANCHOR_H
-#include "Gps.h"
+#include "position.h"
 #include <M5Stack.h>
-#include <math.h>
+#include "Gps.h"
 
 typedef struct
 {
@@ -21,22 +21,13 @@ public:
 	position_t getPosition();
 	int newPositionFlag;
 	anchorData_t data;
-	long double distance(long double lat1, long double long1,
-											 long double lat2, long double long2);
+
 	/**
 	 * @param north
 	 * @param west
 	 */
 	void move(float north, float west);
-
-	/**
-	 * @param referencePosition
-	 */
-	float getDistance(position_t referencePosition);
-
-private:
-	long double toRadians(const long double degree);
-
+	bool isFixed();
 };
 
 extern QueueHandle_t anchorPosSettedQueue;

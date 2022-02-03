@@ -4,63 +4,14 @@
 
 #include "Gps.h"
 //#define _DEBUG_GPS
-#define MAX_FAIL_READ 6
 #define DEGREE_FACTOR 10000000
-// Cola por la que se comparte al posicion
-
-QueueHandle_t gpsQueue = NULL;
 
 /**
  * Gps implementation
  */
-
-// Gps gps;
-void gpsTask(void *pvParameters)
-{
-  Gps *gps = (Gps *)pvParameters;
-  uint32_t failReadCounter = 0;
-  while (gps->begin() == false)
-    delay(1000);
-  gps->config();
-  for (;;)
-  {
-    if (gps->readPosition() == true)
-      failReadCounter = 0; // No fail
-    else
-    {
-      Serial.println("failRead");
-      failReadCounter++;
-    }
-    if (failReadCounter == MAX_FAIL_READ)
-    {
-      gps->setAsDesconnected();
-      failReadCounter = 0; // Restarts the counter
-    }
-    delay(250);
-        UBaseType_t uxHighWaterMark;
-  uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-    Serial.print("GpsStack:");
-    Serial.println(uxHighWaterMark); 
-  }
-}
-
 Gps::Gps()
 {
   status = NOT_CONNECTED;
-}
-
-void Gps::initTask()
-{
-  gpsQueue = xQueueCreate(1, sizeof(position));
-
-  xTaskCreatePinnedToCore(
-      gpsTask,
-      "gps",
-      2048,
-      (void *)this,
-      3,
-      NULL,
-      1);
 }
 
 GPS_STATUS Gps::getStatus()
@@ -133,8 +84,6 @@ bool Gps::readPosition()
 
     // Probando el funcionamiento de las colas
   }
-  if (!xQueueOverwrite(gpsQueue, &position))
-    Serial.println(F("Queue Problem"));
   return true;
 }
 
@@ -185,6 +134,40 @@ position_t Gps::getPosition()
 void Gps::setAsDesconnected()
 {
   position.status = NOT_CONNECTED;
-  if (!xQueueOverwrite(gpsQueue, &position))
-    Serial.println(F("Queue Problem"));
+}
+
+
+// Utility function for converting degrees to radians
+long double Gps::toRadians(const long double degree)
+{
+  long double one_deg = (M_PI) / 180;
+  return (one_deg * degree);
+}
+
+
+
+long double Gps::calculateDistance(long double lat1, long double long1,
+                           long double lat2, long double long2)
+{
+  // Convert the latitudes and longitudes from degree to radians.
+  lat1 = toRadians(lat1);
+  long1 = toRadians(long1);
+  lat2 = toRadians(lat2);
+  long2 = toRadians(long2);
+
+  // Haversine Formula
+  long double dlong = long2 - long1;
+  long double dlat = lat2 - lat1;
+
+  long double ans = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlong / 2), 2);
+  ans = 2 * asin(sqrt(ans));
+
+  // Radius of Earth in Kilometers, R = 6371
+  // Use R = 3956 for miles
+  long double R = 6371;
+
+  // Calculate the result
+  ans = ans * R;
+
+  return ans;
 }

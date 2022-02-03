@@ -1,5 +1,5 @@
 #include "Firebase.h"
-#include "Anchor.h"
+#include "Boat.hpp"
 
 #include <Firebase_ESP_Client.h>
 // Provide the token generation process info.
@@ -9,7 +9,7 @@
 #include <addons/RTDBHelper.h>
 void firebaseTask(void *pvParameters)
 {
-  Anchor *anchor = (Anchor *)pvParameters;
+  Boat *boat = (Boat *)pvParameters;
   UBaseType_t uxHighWaterMark;
   uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
   Serial.print("Firebase:");
@@ -56,7 +56,7 @@ void firebaseTask(void *pvParameters)
     {
       count = count + 10;
       Serial.printf("Set float... %s\n", Firebase.RTDB.setInt(&fbdo, F("/test/float"), count) ? "ok" : fbdo.errorReason().c_str());
-      Firebase.RTDB.setBool(&fbdo, F("/anchor/fixed"), anchor->data.isFixed);
+      Firebase.RTDB.setBool(&fbdo, F("/anchor/fixed"), boat->anchor.isFixed());
     }
     uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
     Serial.print("Firebase:");
