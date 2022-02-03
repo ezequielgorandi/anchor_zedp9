@@ -7,6 +7,7 @@
 #define MAX_FAIL_READ 6
 #define DEGREE_FACTOR 10000000
 // Cola por la que se comparte al posicion
+
 QueueHandle_t gpsQueue = NULL;
 
 /**
@@ -36,6 +37,10 @@ void gpsTask(void *pvParameters)
       failReadCounter = 0; // Restarts the counter
     }
     delay(250);
+        UBaseType_t uxHighWaterMark;
+  uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+    Serial.print("GpsStack:");
+    Serial.println(uxHighWaterMark); 
   }
 }
 
@@ -51,9 +56,9 @@ void Gps::initTask()
   xTaskCreatePinnedToCore(
       gpsTask,
       "gps",
-      4096,
+      2048,
       (void *)this,
-      4,
+      3,
       NULL,
       1);
 }

@@ -1,6 +1,7 @@
 /*Se implemento la cola y funciona OK. Falta reemplazar el uso del GPS en la terea de pantalla, por el uso de la cola (hay que hacerlo?)*/
 
 #include "Anchor.h"
+#include "Firebase.h"
 #include "Free_Fonts.h"
 #include "Gps.h"
 #include "Screen.h"
@@ -18,13 +19,25 @@
 
 uint32_t ypos = 0;
 long lastTime = 0; // Simple local timer. Limits amount if I2C traffic to u-blox module.
-Gps gps = Gps();
 Anchor anchor = Anchor();
-// Gps gps = Gps();
+Gps gps = Gps();
+
+#define FIREBASE_STACK_SIZE 65000
+StaticTask_t firebaseBuffer;
+StackType_t firebaseStack[FIREBASE_STACK_SIZE];
+
+#define SCREEN_STACK_SIZE 4096
+StaticTask_t screenBuffer;
+StackType_t screenStack[SCREEN_STACK_SIZE];
 
 void screenTask(void *pvParameters)
 {
   TFT_eSprite img = TFT_eSprite(&M5.Lcd);
+  UBaseType_t uxHighWaterMark;
+  uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+  Serial.println(uxHighWaterMark);
+  int count = 1;
+
   // Falta borrar el Gps
   Screen_1 screen_1 = Screen_1(&img, &gps);
   Screen_2 screen_2 = Screen_2(&img, &gps);
@@ -33,8 +46,7 @@ void screenTask(void *pvParameters)
 
   screen_1.init();
   screen_1.update(aPosition);
-  screen_1.show();
-  delay(2000);
+
   while (1)
   {
     if (M5.BtnC.wasPressed())
@@ -60,24 +72,25 @@ void screenTask(void *pvParameters)
         case LOW_PRECISSION:
           screen_1.init();
           screen_1.update();
-          screen_1.show();
           break;
         case FIXED:
           float distance;
-          screen_2.init();
+          screen_2.init(&img);
           if (anchor.data.isFixed == true)
             distance = anchor.getDistance(aPosition);
           else
             distance = 0;
           screen_2.update(aPosition, distance, anchor.data);
-          screen_2.show();
           break;
         }
       }
     }
     else
       Serial.println("Queue es NULL");
+    uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
     delay(250);
+    Serial.print("Display:");
+    Serial.println(uxHighWaterMark);
   }
   // Will never reach this point.
 }
@@ -113,14 +126,35 @@ void setup()
 
   gps.initTask();
 
-  xTaskCreatePinnedToCore(
-      screenTask,
-      "screen",
-      4096,
-      NULL,
-      tskIDLE_PRIORITY,
-      NULL,
+  xTaskCreateStaticPinnedToCore(
+      screenTask,        /* Function that implements the task. */
+      "SCREEN",          /* Text name for the task. */
+      SCREEN_STACK_SIZE, /* Number of indexes in the xStack array. */
+      (void *)1,         /* Parameter passed into the task. */
+      1,                 /* Priority at which the task is created. */
+      screenStack,       /* Array to use as the task's stack. */
+      &screenBuffer,
       0);
+
+  /* Create the task without using any dynamic memory allocation. */
+  xTaskCreateStaticPinnedToCore(
+      firebaseTask,        /* Function that implements the task. */
+      "NAME",              /* Text name for the task. */
+      FIREBASE_STACK_SIZE, /* Number of indexes in the xStack array. */
+      (void *)&anchor,     /* Parameter passed into the task. */
+      2,                   /* Priority at which the task is created. */
+      firebaseStack,       /* Array to use as  the task's stack. */
+      &firebaseBuffer,
+      1);
+
+  // xTaskCreatePinnedToCore(
+  //     screenTask,
+  //     "screen",
+  //     4096,
+  //     NULL,
+  //     1,
+  //     NULL,
+  //     0);
 }
 void loop()
 {

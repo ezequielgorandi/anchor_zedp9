@@ -2,12 +2,12 @@
  * Project anchor
  */
 
-#include "SparkFun_u-blox_GNSS_Arduino_Library.h"
-#include "position.h"
-
 #ifndef _GPS_H
 #define _GPS_H
 
+#include "SparkFun_u-blox_GNSS_Arduino_Library.h"
+#include "position.h"
+#include "Anchor.h"
 enum GPS_STATUS
 {
 	NOT_CONNECTED,

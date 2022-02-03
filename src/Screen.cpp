@@ -13,12 +13,25 @@ Screen::Screen(TFT_eSprite *anImg)
   ypos = 0;
   img = anImg;
   img->deleteSprite();
-  img->createSprite(IWIDTH, IHEIGHT);
+  img->setColorDepth(8);
+  img->createSprite(IWIDTH, LINE_HEIGHT);
 }
 
 void Screen::show()
 {
   img->pushSprite(0, 0);
+}
+
+void Screen::clear()
+{
+  img->fillSprite(APP_BACKGROUND_COLOR);
+  for (int i = 0; i < 8; i++)
+    showLine(i);
+}
+
+void Screen::showLine(int32_t line)
+{
+  img->pushSprite(0, line * LINE_HEIGHT);
 }
 
 void Screen::readButtons()
@@ -42,12 +55,12 @@ Screen_1::Screen_1(TFT_eSprite *anImg, Gps *aGps) : Screen(anImg)
 
 void Screen_1::init()
 {
-  img->fillSprite(APP_BACKGROUND_COLOR);
-  // First we test them with a background colour set
+  Screen::clear();
   img->setTextSize(1);
   img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
   img->setFreeFont(APP_FONT);
   img->drawString("Initializing Gps...", 0, 0, FONT4);
+  Screen::showLine(0);
 }
 
 void Screen_1::update()
@@ -57,11 +70,13 @@ void Screen_1::update()
   {
     img->setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
     img->drawString("GPS connected              ", 0, img->fontHeight(FONT4));
+    Screen::showLine(1);
   }
   else
   {
     img->setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
     img->drawString("GPS not connected", 0, img->fontHeight(FONT4));
+    Screen::showLine(1);
   }
 }
 
@@ -71,11 +86,13 @@ void Screen_1::update(position_t position)
   {
     img->setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
     img->drawString("GPS connected              ", 0, img->fontHeight(FONT4));
+    Screen::showLine(1);
   }
   else
   {
     img->setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
     img->drawString("GPS not connected", 0, img->fontHeight(FONT4));
+    Screen::showLine(1);
   }
 }
 
@@ -84,9 +101,14 @@ Screen_2::Screen_2(TFT_eSprite *anImg, Gps *aGps) : Screen(anImg)
   gps = aGps;
 }
 
-void Screen_2::init()
+void Screen_2::init(TFT_eSprite *anImg)
 {
-  img->fillSprite(APP_BACKGROUND_COLOR);
+  Screen::clear();
+  ypos = 0;
+  img = anImg;
+  img->deleteSprite();
+  img->setColorDepth(8);
+  img->createSprite(160, 144);
 
   // First we test them with a background colour set
   img->setTextSize(1);
@@ -108,32 +130,32 @@ void Screen_2::update()
     img->fillSprite(APP_BACKGROUND_COLOR);
     img->drawString("Fixing position, please wait...", 0, ypos);
   }
+  Screen::show();
 }
 
 void Screen_2::update(position_t position, float distance, anchorData_t anchor)
 {
   if (gps->getStatus() == FIXED)
   {
-    img->fillSprite(APP_BACKGROUND_COLOR);
-    img->drawString("Lon: " + String(position.longitude, 4), 0, ypos);
-    img->drawString("Lat: " + String(position.latitude, 4), 0, ypos + img->fontHeight(FONT4));
-    img->drawString("Acc: " + String(position.accuracy) + "mm", 0, ypos + img->fontHeight(FONT4) * 2);
+    img->drawString("Lon: " + String(gps->getPosition().longitude, 4), 0, ypos);
+    img->drawString("Lat: " + String(gps->getPosition().latitude, 4), 0, ypos + img->fontHeight(FONT4));
+    img->drawString("Acc: " + String(gps->getPosition().accuracy) + "mm", 0, ypos + img->fontHeight(FONT4) * 2);
     if (anchor.isFixed == true)
     {
-      img->drawString("Anchor: Fixed", 0, ypos + img->fontHeight(FONT4) * 4);
-      img->drawString("Distance: " + String(distance, 0) + "M", 0, ypos + img->fontHeight(FONT4) * 5);
-      Serial.println("Distance: " + String(distance, 0));
+      img->drawString("Anchor: Fixed", 0, ypos + img->fontHeight(FONT4) * 3);
+      img->drawString("Distance: " + String(distance, 0) + "M", 0, ypos + img->fontHeight(FONT4) * 4);
     }
     else
     {
-      img->drawString("Anchor: Not Fixed", 0, ypos + img->fontHeight(FONT4) * 4);
+      img->drawString("Anchor: Not Fixed", 0, ypos + img->fontHeight(FONT4) * 3);
     }
   }
   else
   {
-    img->fillSprite(APP_BACKGROUND_COLOR);
-    img->drawString("Fixing position, please wait...", 0, ypos);
+    Screen::clear();
+    img->drawString("Fixing position, please wait...", 0, 0);
   }
+  img->pushSprite(0, 0);
 }
 
 Screen_SetAnchorPosition::Screen_SetAnchorPosition(TFT_eSprite *anImg) : Screen(anImg)
