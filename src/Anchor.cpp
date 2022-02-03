@@ -19,7 +19,7 @@ void anchorTask(void *pvParameters)
     if (M5.BtnA.wasPressed())
     {
       anchor->newPositionFlag = 1;
-      if (/*!xQueueReceive(gpsQueue, &anchor->data.position, 10000) ||*/ anchor->data.position.status != FIXED || anchor->data.position.accuracy > MIN_ANCHOR_ACCURACY)
+      if (!xQueueReceive(gpsQueue, &anchor->data.position, 10000) || anchor->data.position.status != FIXED || anchor->data.position.accuracy > MIN_ANCHOR_ACCURACY)
       {
         anchor->data.isFixed = false;
         anchor->newPositionFlag = -1;
@@ -48,14 +48,14 @@ void anchorTask(void *pvParameters)
  */
 Anchor::Anchor()
 {
-  //xTaskCreatePinnedToCore(
-  //    anchorTask,
-  //    "anchorTask",
-  //    4096,
-  //    (void *)this,
-  //    5,
-  //    NULL,
-  //    0);
+  xTaskCreatePinnedToCore(
+      anchorTask,
+      "anchorTask",
+      4096,
+      (void *)this,
+      5,
+      NULL,
+      0);
 
   anchorPosSettedQueue = xQueueCreate(1, sizeof(data.position));
 }

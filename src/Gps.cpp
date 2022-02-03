@@ -5,13 +5,14 @@
 #include "Gps.h"
 //#define _DEBUG_GPS
 #define DEGREE_FACTOR 10000000
-
+QueueHandle_t gpsQueue = NULL;
 /**
  * Gps implementation
  */
 Gps::Gps()
 {
   status = NOT_CONNECTED;
+  gpsQueue = xQueueCreate(1, sizeof(position));
 }
 
 GPS_STATUS Gps::getStatus()
@@ -84,6 +85,8 @@ bool Gps::readPosition()
 
     // Probando el funcionamiento de las colas
   }
+  if (!xQueueOverwrite(gpsQueue, &position))
+    Serial.println(F("Queue Problem"));
   return true;
 }
 
@@ -136,7 +139,6 @@ void Gps::setAsDesconnected()
   position.status = NOT_CONNECTED;
 }
 
-
 // Utility function for converting degrees to radians
 long double Gps::toRadians(const long double degree)
 {
@@ -144,10 +146,8 @@ long double Gps::toRadians(const long double degree)
   return (one_deg * degree);
 }
 
-
-
 long double Gps::calculateDistance(long double lat1, long double long1,
-                           long double lat2, long double long2)
+                                   long double lat2, long double long2)
 {
   // Convert the latitudes and longitudes from degree to radians.
   lat1 = toRadians(lat1);

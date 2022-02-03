@@ -50,11 +50,6 @@ void screenTask(void *pvParameters)
 
   while (1)
   {
-    if (M5.BtnC.wasPressed())
-    {
-      M5.Power.powerOFF();
-    }
-
     // Anchor is being fixed
     if (boat.anchor.newPositionFlag != 0)
     {
