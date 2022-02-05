@@ -1,7 +1,7 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-#include "Anchor.h"
+#include "Boat.hpp"
 #include "Free_Fonts.h"
 #include "Gps.h"
 #include "SparkFun_u-blox_GNSS_Arduino_Library.h"
@@ -14,54 +14,58 @@
 #define APP_BACKGROUND_COLOR TFT_BLACK
 #define APP_FONT FSSB9
 #define APP_FONT_COLOR TFT_WHITE
-
+void screenTask(void *pvParameters);
 class Screen
 {
 public:
 	uint32_t ypos;
 	TFT_eSprite *img;
-	Screen(TFT_eSprite *anImg);
-	void init();
+	Screen();
+	Screen(TFT_eSprite *anImg, Boat *aBoat);
+	virtual void init() ;
+	virtual void handle(Screen **screen)  ;
+	void finish();
 	void show();
-	void update(position_t position);
-	void update();
-	void readButtons();
+	virtual void update();
 	void showLine(int32_t line);
 	void clear();
-
+	Boat *boat;
 };
 
 class Screen_1 : public Screen
 {
 public:
-	Screen_1(TFT_eSprite *anImg, Gps *aGps);
-	void init();
-	void update();
+	Screen_1();
+	Screen_1(TFT_eSprite *anImg, Boat *aBoat);
+	void init() override;
+	void handle(Screen **actualScreen) override;
+	void update() override;
 	void update(position_t position);
 	void showLine(int32_t line);
 
 private:
-	Gps *gps;
 };
 
 class Screen_2 : public Screen
 {
 public:
-	Screen_2(TFT_eSprite *anImg, Gps *aGps);
-	void init(TFT_eSprite *anImg);
-	void update();
-	void update(position_t position, float distance, anchorData_t data);
+	Screen_2();
+	Screen_2(TFT_eSprite *anImg, Boat *aBoat);
+	void init() override;
+	void handle(Screen **actualScreen) override;
+	void update()override ;
 	void showLine(int32_t line);
 
 private:
-	Gps *gps;
+	String anchorFixed = "Not Fixed";
 };
 
 class Screen_SetAnchorPosition : public Screen
 {
 public:
-	Screen_SetAnchorPosition(TFT_eSprite *anImg);
-	bool set(int *anchorFlags, anchorData_t anchor);
+	Screen_SetAnchorPosition(){};
+	Screen_SetAnchorPosition(TFT_eSprite *anImg, Boat *boat);
+	bool set(int *anchorFlags);
 	void init();
 	void update(position_t aPosition);
 	void error();

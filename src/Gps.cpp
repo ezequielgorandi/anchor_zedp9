@@ -5,6 +5,8 @@
 #include "Gps.h"
 //#define _DEBUG_GPS
 #define DEGREE_FACTOR 10000000
+#define _TEST_NO_GPS
+
 QueueHandle_t gpsQueue = NULL;
 /**
  * Gps implementation
@@ -28,18 +30,19 @@ bool Gps::isFixed()
   return false;
 }
 
-bool Gps::begin()
-{
-  status = NOT_CONNECTED;
-  position.status = NOT_CONNECTED; // Borrar uno
-  return gpsController.begin();
-}
+#ifndef _TEST_NO_GPS
 
 void Gps::config()
 {
   gpsController.setVal16(UBLOX_CFG_RATE_MEAS, 500);
   gpsController.setI2COutput(COM_TYPE_UBX);                 // Set the I2C port to output UBX only (turn off NMEA noise)
   gpsController.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); // Save (only) the communications port settings to flash and BBR
+}
+bool Gps::begin()
+{
+  status = NOT_CONNECTED;
+  position.status = NOT_CONNECTED; // Borrar uno
+  return gpsController.begin();
 }
 
 bool Gps::readPosition()
@@ -89,6 +92,34 @@ bool Gps::readPosition()
     Serial.println(F("Queue Problem"));
   return true;
 }
+#else
+bool Gps::begin()
+{
+  return true;
+}
+void Gps::config()
+{
+}
+
+bool Gps::readPosition()
+{
+  uint8_t fixType = 3;
+  static float count = 0;
+  if (fixType == 3)
+  {
+    status = FIXED;
+    position.status = FIXED; // Borrar uno
+    count += 0.000025;
+    position.latitude = 58.0326 + count;
+    position.longitude = 62 + count;
+    position.accuracy = 1;
+    // Probando el funcionamiento de las colas
+  }
+  if (!xQueueOverwrite(gpsQueue, &position))
+    Serial.println(F("Queue Problem"));
+  return true;
+}
+#endif
 
 void Gps::readPosition_2()
 {

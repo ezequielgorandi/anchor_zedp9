@@ -7,6 +7,7 @@
 #include <M5Stack.h>
 #include "Gps.h"
 
+void anchorTask(void *pvParameters);
 typedef struct
 {
 	bool isFixed;
@@ -17,17 +18,20 @@ class Anchor
 {
 public:
 	
+	int newPositionFlag;
 	Anchor();
 	position_t getPosition();
-	int newPositionFlag;
-	anchorData_t data;
-
+	void setPosition(position_t position);
+	void setFixed(bool value);
+	bool isFixed();
 	/**
 	 * @param north
 	 * @param west
 	 */
 	void move(float north, float west);
-	bool isFixed();
+	
+private:
+	anchorData_t data;
 };
 
 extern QueueHandle_t anchorPosSettedQueue;

@@ -67,7 +67,11 @@ void Boat::setAnchorDistance(position_t referencePosition)
   static float media[WINDOW_SIZE] = {0, 0, 0};
   static int index = 0;
   float sum = 0;
-  media[index] = gps.calculateDistance(referencePosition.latitude, referencePosition.longitude, anchor.data.position.latitude, anchor.data.position.longitude) * 1000;
+  media[index] = gps.calculateDistance(
+    referencePosition.latitude, 
+    referencePosition.longitude, 
+    anchor.getPosition().latitude, 
+    anchor.getPosition().longitude) * 1000;
   // media[index] = distance(-34.6528401716296, -58.61750658743727, -34.65179758741755, -58.61754637124556)*1000;
 
   index++;
