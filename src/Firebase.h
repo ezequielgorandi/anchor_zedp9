@@ -1,5 +1,6 @@
-// For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
+#include <M5Stack.h>
 
+// For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
 /* 2. Define the API Key */
 #define API_KEY "AIzaSyBz5o3pwZH-5YESvoOWtAhJKWSxmMi6lOE"
 
@@ -12,3 +13,5 @@
 
 void firebaseTask(void *pvParameters);
 void firebaseTask2(void *pvParameters);
+
+extern QueueHandle_t pushAnchorDataQueue;

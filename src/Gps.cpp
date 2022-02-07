@@ -13,7 +13,7 @@ QueueHandle_t gpsQueue = NULL;
  */
 Gps::Gps()
 {
-  status = NOT_CONNECTED;
+  this->status = NOT_CONNECTED;
   gpsQueue = xQueueCreate(1, sizeof(position));
 }
 
@@ -40,7 +40,7 @@ void Gps::config()
 }
 bool Gps::begin()
 {
-  status = NOT_CONNECTED;
+  this->status = NOT_CONNECTED;
   position.status = NOT_CONNECTED; // Borrar uno
   return gpsController.begin();
 }
@@ -67,11 +67,17 @@ bool Gps::readPosition()
   if (fixType == 3)
   {
     status = FIXED;
-    position.status = FIXED; // Borrar uno
+    position.status = FIXED; //Todo: Borrar uno
     position.latitude = gpsController.getLatitude() / (float)DEGREE_FACTOR;
     position.longitude = gpsController.getLongitude() / (float)DEGREE_FACTOR;
     position.accuracy = gpsController.getPositionAccuracy();
-
+    position.date.minute = gpsController.getMinute();
+    position.date.hour = gpsController.getHour();
+    position.date.day = gpsController.getDay();
+    position.date.month = gpsController.getMonth();
+    position.date.year = gpsController.getYear();
+    position.epoch = gpsController.getUnixEpoch();
+  
 #ifdef _DEBUG_GPS
     Serial.println("FixType: " + fixType);
     Serial.print(F("Lat: "));
@@ -167,6 +173,7 @@ position_t Gps::getPosition()
 
 void Gps::setAsDesconnected()
 {
+  status = NOT_CONNECTED;
   position.status = NOT_CONNECTED;
 }
 

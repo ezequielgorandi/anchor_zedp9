@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include <M5Stack.h>
 #include <WiFi.h>
-
+#include "time.h"
 //#define WIFI_SSID "Centro optico gorandi"
 //#define WIFI_PASSWORD "Libertador3623"
 
@@ -23,7 +23,6 @@
 
 uint32_t ypos = 0;
 long lastTime = 0; // Simple local timer. Limits amount if I2C traffic to u-blox module.
-
 Boat boat = Boat();
 
 #define FIREBASE_STACK_SIZE 65000

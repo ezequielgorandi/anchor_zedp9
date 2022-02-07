@@ -39,62 +39,6 @@ void screenTask(void *pvParameters)
   }
 }
 
-// void screenTask_2(void *pvParameters)
-//{
-//   TFT_eSprite img = TFT_eSprite(&M5.Lcd);
-//   UBaseType_t uxHighWaterMark;
-//   uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-//   Serial.println(uxHighWaterMark);
-//   int count = 1;
-//
-//   Screen *screen_;
-//   screen_1 = Screen_1(&img, &boat.gps);
-//   screen_2 = Screen_2(&img, &boat.gps);
-//   Screen_SetAnchorPosition screen_setAnchorPos = Screen_SetAnchorPosition(&img);
-//   position_t aPosition;
-//
-//   screen_1.init();
-//   screen_1.update(aPosition);
-//
-//   while(1)
-//   {
-//     screen_->handle(screen_);
-//   }
-//
-//   while (1)
-//   {
-//     // Anchor is being fixed
-//     if (boat.anchor.newPositionFlag != 0)
-//     {
-//       if (screen_setAnchorPos.set(&boat.anchor.newPositionFlag, boat.anchor.data) == true)
-//         delay(3000);
-//     }
-//     aPosition = boat.gps.getPosition();
-//     switch (aPosition.status)
-//     {
-//     case NOT_CONNECTED:
-//     case LOW_PRECISSION:
-//       setScreen(screen_, &screen_1);
-//       break;
-//     case FIXED:
-//       float distance;
-//       setScreen(screen_, &screen_2);
-//       screen_2.init(&img);
-//       if (boat.anchor.data.isFixed == true)
-//         distance = boat.getAnchorDistance();
-//       else
-//         distance = 0;
-//       screen_2.update(aPosition, distance, boat.anchor.data);
-//       break;
-//     }
-//     uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-//     delay(250);
-//     Serial.print("Display:");
-//     Serial.println(uxHighWaterMark);
-//     // Will never reach this point.
-//   }
-// }
-
 Screen::Screen()
 {
 }
@@ -162,17 +106,24 @@ void Screen_1::init()
 
 void Screen_1::update()
 {
+  Serial.println("Gps Status: " + String(boat->gps.getStatus()));
   if (boat->gps.getStatus() == LOW_PRECISSION)
   {
     img->setTextColor(TFT_GREENYELLOW, APP_BACKGROUND_COLOR);
-    img->drawString("GPS connected", 0, 0, FONT4);
+    img->drawString("GPS connected     ", 0, 0, FONT4);
+    img->pushSprite(0, 1 * LINE_HEIGHT);
+    img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
+    img->drawString("Fixing Position...", 0, 0, FONT4);
+    img->pushSprite(0, 2 * LINE_HEIGHT);
   }
   if (boat->gps.getStatus() == NOT_CONNECTED)
   {
     img->setTextColor(TFT_RED, APP_BACKGROUND_COLOR);
     img->drawString("GPS not connected", 0, 0, FONT4);
+    img->pushSprite(0, 1 * LINE_HEIGHT);
+    img->fillSprite(APP_BACKGROUND_COLOR);
+    img->pushSprite(0, 2 * LINE_HEIGHT);
   }
-  img->pushSprite(0, 1 * LINE_HEIGHT);
 }
 
 void Screen_1::handle(Screen **screen_)
@@ -233,7 +184,16 @@ void Screen_2::update()
     img->drawString("Lon: " + String(boat->gps.getPosition().longitude, 4), 0, ypos);
     img->drawString("Lat: " + String(boat->gps.getPosition().latitude, 4), 0, ypos + img->fontHeight(FONT4));
     img->drawString("Acc: " + String(boat->gps.getPosition().accuracy) + "mm", 0, ypos + img->fontHeight(FONT4) * 2);
-    if (boat->anchor.isFixed())
+    
+    //Se precionó el boton de fijar posicion.
+    if (xQueueReceive(anchorNewPositionQueue, &newPosition, 0))
+    {
+      img->setTextColor(YELLOW, APP_BACKGROUND_COLOR);
+      img->drawString("Anchor: Fixing...", 0, ypos + img->fontHeight(FONT4) * 3);
+      img->pushSprite(0, 0);
+      delay(3000);
+    }
+    else if (boat->anchor.isFixed())
     {
       img->setTextColor(GREEN, APP_BACKGROUND_COLOR);
       img->drawString("Anchor: Fixed", 0, ypos + img->fontHeight(FONT4) * 3);
@@ -247,17 +207,7 @@ void Screen_2::update()
       img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
     }
   }
-  else
-  {
-    img->drawString("Fixing position, please wait...", 0, 0);
-  }
-  if (xQueueReceive(anchorNewPositionQueue, &newPosition, 0))
-  {
-    img->setTextColor(YELLOW, APP_BACKGROUND_COLOR);
-    img->drawString("Anchor: Fixing...  ", 0, ypos + img->fontHeight(FONT4) * 3);
-    img->pushSprite(0, 0);
-    delay(3000);
-  }
+
   img->pushSprite(0, 0);
 }
 
