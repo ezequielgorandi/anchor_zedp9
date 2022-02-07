@@ -11,11 +11,11 @@
 #include <M5Stack.h>
 #include <WiFi.h>
 
-#define WIFI_SSID "Centro optico gorandi"
-#define WIFI_PASSWORD "Libertador3623"
+//#define WIFI_SSID "Centro optico gorandi"
+//#define WIFI_PASSWORD "Libertador3623"
 
-//#define WIFI_SSID "Telecentro-717c"
-//#define WIFI_PASSWORD "UMN32NHDZNHJ"
+#define WIFI_SSID "Telecentro-717c"
+#define WIFI_PASSWORD "UMN32NHDZNHJ"
 
 #define APP_BACKGROUND_COLOR TFT_BLACK
 #define APP_FONT FSSB9

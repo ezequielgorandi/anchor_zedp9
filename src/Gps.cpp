@@ -5,7 +5,7 @@
 #include "Gps.h"
 //#define _DEBUG_GPS
 #define DEGREE_FACTOR 10000000
-#define _TEST_NO_GPS
+//#define _TEST_NO_GPS
 
 QueueHandle_t gpsQueue = NULL;
 /**

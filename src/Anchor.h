@@ -34,5 +34,5 @@ private:
 	anchorData_t data;
 };
 
-extern QueueHandle_t anchorPosSettedQueue;
+extern QueueHandle_t anchorNewPositionQueue;
 #endif //_ANCHOR_H

@@ -4,7 +4,7 @@
 #include "Anchor.h"
 #include "setup.h"
 
-QueueHandle_t anchorPosSettedQueue = NULL;
+QueueHandle_t anchorNewPositionQueue = NULL;
 
 void anchorTask(void *pvParameters)
 {
@@ -19,7 +19,9 @@ void anchorTask(void *pvParameters)
     }
     if (M5.BtnA.wasPressed())
     {
-      anchor->newPositionFlag = 1;
+      anchor->newPositionFlag = 1; // TODO: Quitar esta variable
+      if (!xQueueOverwrite(anchorNewPositionQueue, &anchor->newPositionFlag)) //avisa que se presiono el boton
+        Serial.println(F("Queue Problem"));
       position_t position;
       if (!xQueueReceive(gpsQueue, &position, 10000) || position.status != FIXED || position.accuracy > MIN_ANCHOR_ACCURACY)
       {
@@ -54,7 +56,7 @@ Anchor::Anchor()
 {
   data.isFixed = false;
   newPositionFlag = 0;
-  anchorPosSettedQueue = xQueueCreate(1, sizeof(data.position));
+  anchorNewPositionQueue = xQueueCreate(1, sizeof(bool));
 }
 
 /**
@@ -70,8 +72,7 @@ void Anchor::setPosition(position_t position)
   data.position = position;
 }
 
-
-void Anchor::setFixed(bool value) 
+void Anchor::setFixed(bool value)
 {
   data.isFixed = value;
 }

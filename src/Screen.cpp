@@ -211,11 +211,11 @@ void Screen_2::init()
 void Screen_2::handle(Screen **screen_)
 {
   position_t position = boat->gps.getPosition();
-  if (boat->anchor.newPositionFlag != 0)
-  {
-    if (screen_setAnchorPos.set(&boat->anchor.newPositionFlag) == true)
-      delay(3000);
-  }
+  // if (boat->anchor.newPositionFlag != 0)
+  //{
+  //   if (screen_setAnchorPos.set(&boat->anchor.newPositionFlag) == true)
+  //     delay(3000);
+  // }
 
   if (position.status == LOW_PRECISSION || position.status == NOT_CONNECTED)
   {
@@ -227,6 +227,7 @@ void Screen_2::update()
 {
   img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
   img->fillSprite(APP_BACKGROUND_COLOR);
+  bool newPosition;
   if (boat->gps.getStatus() == FIXED)
   {
     img->drawString("Lon: " + String(boat->gps.getPosition().longitude, 4), 0, ypos);
@@ -241,19 +242,21 @@ void Screen_2::update()
     }
     else
     {
-      if (boat->anchor.newPositionFlag == 1)
-        img->drawString("Anchor: Fixing...", 0, ypos + img->fontHeight(FONT4) * 3);
-      else
-      {
-        img->setTextColor(RED, APP_BACKGROUND_COLOR);
-        img->drawString("Anchor: Not Fixed", 0, ypos + img->fontHeight(FONT4) * 3);
-        img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
-      }
+      img->setTextColor(RED, APP_BACKGROUND_COLOR);
+      img->drawString("Anchor: Not Fixed", 0, ypos + img->fontHeight(FONT4) * 3);
+      img->setTextColor(APP_FONT_COLOR, APP_BACKGROUND_COLOR);
     }
   }
   else
   {
     img->drawString("Fixing position, please wait...", 0, 0);
+  }
+  if (xQueueReceive(anchorNewPositionQueue, &newPosition, 0))
+  {
+    img->setTextColor(YELLOW, APP_BACKGROUND_COLOR);
+    img->drawString("Anchor: Fixing...  ", 0, ypos + img->fontHeight(FONT4) * 3);
+    img->pushSprite(0, 0);
+    delay(3000);
   }
   img->pushSprite(0, 0);
 }
